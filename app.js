@@ -13,7 +13,7 @@ const GITHUB_FOLDER = "files";
 // ============================================================
 
 const GITHUB_TOKEN =
-    "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";
+    "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";
 
 // ============================================================
 
