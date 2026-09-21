@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>GitHub File Storage</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+            min-height: 100vh;
+            padding: 40px 15px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #667085;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #24292f;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .secondary {
+            background: #e9edf2;
+            color: #172033;
+        }
+
+        .upload-area {
+            border: 2px dashed #98a2b3;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .actions button {
+            flex: 1;
+        }
+
+        .status {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .success {
+            background: #ecfdf3;
+            color: #027a48;
+        }
+
+        .error {
+            background: #fef3f2;
+            color: #b42318;
+        }
+
+        .info {
+            background: #eff8ff;
+            color: #175cd3;
+        }
+
+        .file {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eaecf0;
+            gap: 15px;
+        }
+
+        .file:last-child {
+            border-bottom: none;
+        }
+
+        .file-name {
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .file-size {
+            color: #667085;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .download {
+            width: auto;
+            padding: 8px 15px;
+        }
+
+        .warning {
+            background: #fffaeb;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media(max-width: 650px) {
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .file {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .download {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>GitHub File Storage</h1>
+
+    <div class="subtitle">
+        Upload files to GitHub and download them whenever required.
+    </div>
+
+
+    <!-- GitHub Settings -->
+
+    <div class="card">
+
+        <h2>GitHub Settings</h2>
+
+        <div class="grid">
+
+            <div>
+                <label>GitHub Username / Owner</label>
+
+                <input
+                    id="owner"
+                    type="text"
+                    placeholder="your-username"
+                >
+            </div>
+
+
+            <div>
+                <label>Repository</label>
+
+                <input
+                    id="repo"
+                    type="text"
+                    placeholder="file-storage"
+                >
+            </div>
+
+
+            <div>
+                <label>Branch</label>
+
+                <input
+                    id="branch"
+                    type="text"
+                    value="main"
+                >
+            </div>
+
+
+            <div>
+                <label>GitHub Personal Access Token</label>
+
+                <input
+                    id="token"
+                    type="password"
+                    placeholder="github_pat_..."
+                >
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Security -->
+
+    <div class="card">
+
+        <div class="warning">
+
+            <b>Security:</b>
+
+            Never put your GitHub token directly inside this HTML
+            file if you are going to publish the website publicly.
+
+            For a public application, use a backend/serverless API
+            or GitHub OAuth.
+
+        </div>
+
+    </div>
+
+
+    <!-- Upload -->
+
+    <div class="card">
+
+        <h2>Upload File</h2>
+
+
+        <div class="upload-area">
+
+            <input
+                id="fileInput"
+                type="file"
+            >
+
+            <p id="selectedFile">
+                No file selected
+            </p>
+
+        </div>
+
+
+        <div class="actions">
+
+            <button onclick="uploadFile()">
+                Upload to GitHub
+            </button>
+
+
+            <button
+                class="secondary"
+                onclick="loadFiles()"
+            >
+                Refresh Files
+            </button>
+
+        </div>
+
+
+        <div
+            id="status"
+            class="status">
+        </div>
+
+    </div>
+
+
+    <!-- Stored Files -->
+
+    <div class="card">
+
+        <h2>Stored Files</h2>
+
+        <div id="fileList">
+
+            Click "Refresh Files" to load files.
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   GitHub API
+   ============================================================ */
+
+const GITHUB_API = "https://api.github.com";
+
+
+/* ============================================================
+   HTML Elements
+   ============================================================ */
+
+const ownerInput =
+    document.getElementById("owner");
+
+const repoInput =
+    document.getElementById("repo");
+
+const branchInput =
+    document.getElementById("branch");
+
+const tokenInput =
+    document.getElementById("token");
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const selectedFile =
+    document.getElementById("selectedFile");
+
+const statusBox =
+    document.getElementById("status");
+
+const fileList =
+    document.getElementById("fileList");
+
+
+/* ============================================================
+   File Selection
+   ============================================================ */
+
+fileInput.addEventListener(
+    "change",
+    function () {
+
+        const file = fileInput.files[0];
+
+        if (!file) {
+
+            selectedFile.textContent =
+                "No file selected";
+
+            return;
+        }
+
+        selectedFile.textContent =
+            `${file.name} (${formatBytes(file.size)})`;
+
+    }
+);
+
+
+/* ============================================================
+   Get GitHub Configuration
+   ============================================================ */
+
+function getConfig() {
+
+    const owner =
+        ownerInput.value.trim();
+
+    const repo =
+        repoInput.value.trim();
+
+    const branch =
+        branchInput.value.trim() || "main";
+
+    const token =
+        tokenInput.value.trim();
+
+
+    if (!owner) {
+
+        throw new Error(
+            "Enter GitHub username / owner."
+        );
+
+    }
+
+
+    if (!repo) {
+
+        throw new Error(
+            "Enter repository name."
+        );
+
+    }
+
+
+    if (!token) {
+
+        throw new Error(
+            "Enter GitHub Personal Access Token."
+        );
+
+    }
+
+
+    return {
+        owner,
+        repo,
+        branch,
+        token
+    };
+
+}
+
+
+/* ============================================================
+   GitHub Headers
+   ============================================================ */
+
+function githubHeaders(token) {
+
+    return {
+
+        "Authorization":
+            `Bearer ${token}`,
+
+        "Accept":
+            "application/vnd.github+json",
+
+        "X-GitHub-Api-Version":
+            "2022-11-28"
+
+    };
+
+}
+
+
+/* ============================================================
+   Status Message
+   ============================================================ */
+
+function showStatus(
+    message,
+    type = "info"
+) {
+
+    statusBox.className =
+        `status show ${type}`;
+
+    statusBox.textContent =
+        message;
+
+}
+
+
+/* ============================================================
+   GitHub Request
+   ============================================================ */
+
+async function githubRequest(
+    url,
+    options = {}
+) {
+
+    const response =
+        await fetch(
+            url,
+            options
+        );
+
+
+    let data = null;
+
+
+    try {
+
+        data =
+            await response.json();
+
+    }
+    catch {
+
+        // No JSON response
+
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+
+            data?.message ||
+            `GitHub API error: ${response.status}`
+
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+/* ============================================================
+   Upload File
+   ============================================================ */
+
+async function uploadFile() {
+
+    try {
+
+        const {
+            owner,
+            repo,
+            branch,
+            token
+        } = getConfig();
+
+
+        const file =
+            fileInput.files[0];
+
+
+        if (!file) {
+
+            throw new Error(
+                "Please select a file."
+            );
+
+        }
+
+
+        /*
+         * GitHub Contents API is not intended
+         * for very large files.
+         */
+
+        if (
+            file.size >
+            100 * 1024 * 1024
+        ) {
+
+            throw new Error(
+                "File is too large. Keep files below approximately 100 MB."
+            );
+
+        }
+
+
+        showStatus(
+            "Reading file...",
+            "info"
+        );
+
+
+        const base64 =
+            await fileToBase64(file);
+
+
+        /*
+         * Files will be stored here:
+         *
+         * repository/
+         *    files/
+         *       example.pdf
+         */
+
+        const path =
+            `files/${file.name}`;
+
+
+        /*
+         * Check whether file already exists.
+         */
+
+        let existingSHA =
+            null;
+
+
+        const checkURL =
+            `${GITHUB_API}/repos/` +
+            `${encodeURIComponent(owner)}/` +
+            `${encodeURIComponent(repo)}/` +
+            `contents/${encodeGitHubPath(path)}` +
+            `?ref=${encodeURIComponent(branch)}`;
+
+
+        const existingResponse =
+            await fetch(
+                checkURL,
+                {
+                    headers:
+                        githubHeaders(token)
+                }
+            );
+
+
+        if (existingResponse.ok) {
+
+            const existing =
+                await existingResponse.json();
+
+            if (
+                existing.type === "file"
+            ) {
+
+                existingSHA =
+                    existing.sha;
+
+            }
+
+        }
+
+
+        showStatus(
+            "Uploading to GitHub...",
+            "info"
+        );
+
+
+        const uploadURL =
+            `${GITHUB_API}/repos/` +
+            `${encodeURIComponent(owner)}/` +
+            `${encodeURIComponent(repo)}/` +
+            `contents/${encodeGitHubPath(path)}`;
+
+
+        const body = {
+
+            message:
+                existingSHA
+                    ? `Update ${file.name}`
+                    : `Upload ${file.name}`,
+
+            content:
+                base64,
+
+            branch:
+                branch
+
+        };
+
+
+        /*
+         * SHA is required when
+         * updating an existing file.
+         */
+
+        if (existingSHA) {
+
+            body.sha =
+                existingSHA;
+
+        }
+
+
+        await githubRequest(
+            uploadURL,
+            {
+
+                method: "PUT",
+
+                headers: {
+
+                    ...githubHeaders(token),
+
+                    "Content-Type":
+                        "application/json"
+
+                },
+
+                body:
+                    JSON.stringify(body)
+
+            }
+        );
+
+
+        showStatus(
+            `${file.name} uploaded successfully!`,
+            "success"
+        );
+
+
+        await loadFiles();
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        showStatus(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   Load Files
+   ============================================================ */
+
+async function loadFiles() {
+
+    try {
+
+        const {
+            owner,
+            repo,
+            branch,
+            token
+        } = getConfig();
+
+
+        fileList.textContent =
+            "Loading files...";
+
+
+        const url =
+            `${GITHUB_API}/repos/` +
+            `${encodeURIComponent(owner)}/` +
+            `${encodeURIComponent(repo)}/` +
+            `contents/files` +
+            `?ref=${encodeURIComponent(branch)}`;
+
+
+        const files =
+            await githubRequest(
+                url,
+                {
+                    headers:
+                        githubHeaders(token)
+                }
+            );
+
+
+        if (
+            !Array.isArray(files) ||
+            files.length === 0
+        ) {
+
+            fileList.textContent =
+                "No files found.";
+
+            return;
+
+        }
+
+
+        fileList.innerHTML = "";
+
+
+        files
+            .filter(
+                file =>
+                    file.type === "file"
+            )
+            .forEach(
+                file => {
+
+                    const row =
+                        document.createElement(
+                            "div"
+                        );
+
+                    row.className =
+                        "file";
+
+
+                    const information =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    const name =
+                        document.createElement(
+                            "div"
+                        );
+
+                    name.className =
+                        "file-name";
+
+                    name.textContent =
+                        file.name;
+
+
+                    const size =
+                        document.createElement(
+                            "div"
+                        );
+
+                    size.className =
+                        "file-size";
+
+                    size.textContent =
+                        formatBytes(
+                            file.size
+                        );
+
+
+                    information.appendChild(
+                        name
+                    );
+
+                    information.appendChild(
+                        size
+                    );
+
+
+                    const downloadButton =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    downloadButton.className =
+                        "download";
+
+                    downloadButton.textContent =
+                        "Download";
+
+
+                    downloadButton.onclick =
+                        function () {
+
+                            downloadFile(
+                                file.download_url,
+                                file.name
+                            );
+
+                        };
+
+
+                    row.appendChild(
+                        information
+                    );
+
+                    row.appendChild(
+                        downloadButton
+                    );
+
+
+                    fileList.appendChild(
+                        row
+                    );
+
+                }
+            );
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        fileList.textContent = "";
+
+        showStatus(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   Download File
+   ============================================================ */
+
+async function downloadFile(
+    url,
+    filename
+) {
+
+    try {
+
+        showStatus(
+            `Downloading ${filename}...`,
+            "info"
+        );
+
+
+        const response =
+            await fetch(url);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Download failed."
+            );
+
+        }
+
+
+        const blob =
+            await response.blob();
+
+
+        const downloadURL =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href =
+            downloadURL;
+
+        link.download =
+            filename;
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        link.remove();
+
+
+        URL.revokeObjectURL(
+            downloadURL
+        );
+
+
+        showStatus(
+            `${filename} downloaded.`,
+            "success"
+        );
+
+    }
+    catch (error) {
+
+        showStatus(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   Convert File to Base64
+   ============================================================ */
+
+function fileToBase64(file) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function () {
+
+                    const result =
+                        reader.result;
+
+
+                    /*
+                     * Remove:
+                     *
+                     * data:application/pdf;base64,
+                     *
+                     * and keep only Base64.
+                     */
+
+                    const base64 =
+                        result.substring(
+                            result.indexOf(",") + 1
+                        );
+
+
+                    resolve(base64);
+
+                };
+
+
+            reader.onerror =
+                reject;
+
+
+            reader.readAsDataURL(
+                file
+            );
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   Encode GitHub Path
+   ============================================================ */
+
+function encodeGitHubPath(path) {
+
+    return path
+        .split("/")
+        .map(
+            part =>
+                encodeURIComponent(part)
+        )
+        .join("/");
+
+}
+
+
+/* ============================================================
+   Format File Size
+   ============================================================ */
+
+function formatBytes(bytes) {
+
+    if (!bytes) {
+
+        return "0 B";
+
+    }
+
+
+    const units = [
+        "B",
+        "KB",
+        "MB",
+        "GB"
+    ];
+
+
+    const index =
+        Math.floor(
+            Math.log(bytes) /
+            Math.log(1024)
+        );
+
+
+    return (
+        (bytes /
+            Math.pow(
+                1024,
+                index
+            )
+        ).toFixed(
+            index === 0
+                ? 0
+                : 2
+        )
+        + " "
+        + units[index]
+    );
+
+}
+
+</script>
+
+</body>
+</html>
